@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lihat Dataset - Sistem Absensi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .dataset-card {
+        transition: all 0.3s ease;
+      }
+      .dataset-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+      .stat-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+      }
+      .delete-btn {
+        transition: all 0.2s ease;
+      }
+      .delete-btn:hover {
+        transform: scale(1.05);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-gray-800">Dataset Training</h1>
+          <div class="space-x-2">
+            <a href="{{ url_for('upload_training_data') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"> Upload Dataset Baru </a>
+            <a href="{{ url_for('lihat_absensi') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"> Kembali </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for category, message in messages %} {% if category == 'error' %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{{ message }}</div>
+        {% else %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ message }}</div>
+        {% endif %} {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Summary Stats -->
+      {% if datasets %}
+      <div class="grid md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-box">
+          <div class="text-2xl font-bold">{{ datasets|length }}</div>
+          <div class="text-sm opacity-90">Total Dataset</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-2xl font-bold">{{ datasets|sum(attribute='stats.images') }}</div>
+          <div class="text-sm opacity-90">Total Gambar</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-2xl font-bold">{{ datasets|sum(attribute='stats.labels') }}</div>
+          <div class="text-sm opacity-90">Total Label</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-2xl font-bold">{{ "%.1f"|format(datasets|sum(attribute='stats.size_mb')) }} MB</div>
+          <div class="text-sm opacity-90">Total Ukuran</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Dataset List -->
+      {% if datasets %}
+      <div class="grid gap-6">
+        {% for dataset in datasets %}
+        <div class="dataset-card bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">📁 {{ dataset.name }}</h3>
+              <p class="text-sm text-gray-600">📅 Dibuat: {{ dataset.created.strftime('%d/%m/%Y %H:%M') }}</p>
+              <p class="text-xs text-gray-500 mt-1">📂 {{ dataset.path }}</p>
+            </div>
+            <button onclick="deleteDataset('{{ dataset.name }}')" class="delete-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">🗑️ Hapus</button>
+          </div>
+
+          <!-- Dataset Statistics -->
+          <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-blue-600">{{ dataset.stats.images }}</div>
+              <div class="text-sm text-blue-800">Gambar</div>
+            </div>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-green-600">{{ dataset.stats.labels }}</div>
+              <div class="text-sm text-green-800">Label</div>
+            </div>
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-purple-600">{{ dataset.stats.classes }}</div>
+              <div class="text-sm text-purple-800">Kelas</div>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-yellow-600">{{ dataset.stats.size_mb }}</div>
+              <div class="text-sm text-yellow-800">MB</div>
+            </div>
+          </div>
+
+          <!-- Dataset Type Badge -->
+          <div class="mt-4">
+            {% if 'single_images' in dataset.name %}
+            <span class="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded"> 🖼️ Single Images </span>
+            {% else %}
+            <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"> 📦 YOLO Dataset </span>
+            {% endif %} {% if dataset.stats.images > 50 %}
+            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded ml-2"> ⭐ Kualitas Baik </span>
+            {% elif dataset.stats.images >= 20 %}
+            <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded ml-2"> ⚠️ Kualitas Sedang </span>
+            {% else %}
+            <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2"> ❌ Kualitas Rendah </span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <!-- Empty State -->
+      <div class="bg-white rounded-lg shadow-md p-12 text-center">
+        <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Belum Ada Dataset</h3>
+        <p class="text-gray-500 mb-6">Upload dataset training pertama Anda untuk mulai melatih model</p>
+        <a href="{{ url_for('upload_training_data') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg inline-block"> Upload Dataset Pertama </a>
+      </div>
+      {% endif %}
+
+      <!-- Information Panel -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
+        <h3 class="font-semibold text-blue-800 mb-3">ℹ️ Informasi Dataset</h3>
+        <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+          <div>
+            <h4 class="font-medium mb-2">Kualitas Dataset:</h4>
+            <ul class="space-y-1">
+              <li>• <strong>Baik:</strong> ≥50 gambar per dataset</li>
+              <li>• <strong>Sedang:</strong> 20-49 gambar</li>
+              <li>• <strong>Rendah:</strong> <20 gambar</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-medium mb-2">Tips Pengelolaan:</h4>
+            <ul class="space-y-1">
+              <li>• Hapus dataset lama untuk menghemat ruang</li>
+              <li>• Gabungkan dataset kecil menjadi satu</li>
+              <li>• Backup dataset penting secara teratur</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+        <div class="text-center">
+          <svg class="mx-auto h-12 w-12 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Hapus Dataset</h3>
+          <p class="text-gray-600 mb-4">Apakah Anda yakin ingin menghapus dataset ini? Tindakan ini tidak dapat dibatalkan.</p>
+          <div class="flex space-x-4">
+            <button onclick="closeDeleteModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">Batal</button>
+            <button onclick="confirmDelete()" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Hapus</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let datasetToDelete = "";
+
+      function deleteDataset(datasetName) {
+        datasetToDelete = datasetName;
+        document.getElementById("deleteModal").classList.remove("hidden");
+      }
+
+      function closeDeleteModal() {
+        document.getElementById("deleteModal").classList.add("hidden");
+        datasetToDelete = "";
+      }
+
+      function confirmDelete() {
+        if (!datasetToDelete) return;
+
+        fetch('{{ url_for("delete_dataset") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: "dataset_name=" + encodeURIComponent(datasetToDelete),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              location.reload();
+            } else {
+              alert("Error: " + data.error);
+            }
+          })
+          .catch((error) => {
+            alert("Error: " + error);
+          });
+
+        closeDeleteModal();
+      }
+
+      // Close modal when clicking outside
+      document.getElementById("deleteModal").addEventListener("click", function (e) {
+        if (e.target === this) {
+          closeDeleteModal();
+        }
+      });
+    </script>
+  </body>
+</html>

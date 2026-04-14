@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Atur Jadwal - Admin Panel</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/web.png') }}" type="image/png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+    <style>
+      /* Custom CSS untuk tab switching dan error handling */
+      .tab-content {
+        display: block;
+      }
+      
+      .tab-content.hidden {
+        display: none !important;
+      }
+      
+      .border-red-500 {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+      
+      .tab-button {
+        transition: all 0.3s ease;
+      }
+      
+      .tab-button:hover {
+        transform: translateY(-1px);
+      }
+      
+      /* Animation untuk switching */
+      .tab-content {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Calendar day styling */
+      .calendar-day {
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .calendar-day:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+      }
+      
+      /* Error message styling */
+      .error-message {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-left: 4px solid #ef4444;
+      }
+      
+      /* Success message styling */
+      .success-message {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        border-left: 4px solid #22c55e;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-50 font-[Poppins]">
+    <div class="min-h-screen flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow-lg animate-fade-in">
+        <nav class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white p-2 rounded-xl shadow-lg">
+              <img src="{{ url_for('static', filename='images/logo_sekolah.png') }}" class="h-12 w-auto" alt="Logo SD Negeri 1 Purbalingga Lor" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold gradient-heading">Atur Jadwal</h1>
+              <p class="text-sm text-gray-600">Pengaturan Jadwal Absensi Bulanan & Umum</p>
+            </div>
+          </div>
+          <div class="flex space-x-4">
+            <a href="{{ url_for('lihat_absensi') }}" class="px-5 py-2 bg-white border border-primary-200 hover:bg-gray-50 text-primary-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>Lihat Absensi</span>
+            </a>
+            <a href="{{ url_for('change_password') }}" class="flex items-center px-5 py-2 bg-white border border-primary-200 hover:border-primary-300 text-primary-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              <span>Ubah Password</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="flex items-center px-5 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-xl transition-all duration-300 shadow hover:shadow-md">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                ></path>
+              </svg>
+              <span>Beranda</span>
+            </a>
+            <button onclick="showLogoutModal()" class="px-5 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              <span>Logout</span>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Main Content -->
+      <main class="flex-1 animate-slide-down">
+        <div class="max-w-7xl mx-auto px-4 py-10">
+          <!-- Tab Navigation -->
+          <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-6">
+            <div class="border-b border-gray-200">
+              <nav class="flex">
+                <button 
+                  onclick="switchTab('monthly')" 
+                  id="monthlyTab" 
+                  class="tab-button px-8 py-4 text-sm font-medium text-indigo-600 bg-indigo-50 border-b-2 border-indigo-500"
+                >
+                  <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  Jadwal Bulanan
+                </button>
+                <button 
+                  onclick="switchTab('general')" 
+                  id="generalTab" 
+                  class="tab-button px-8 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent"
+                >
+                  <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Jadwal Umum
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {% if message %}
+          <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 animate-fade-in">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span class="text-green-800 font-medium">{{ message }}</span>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Monthly Schedule Tab -->
+          <div id="monthlySchedule" class="tab-content">
+            <div class="bg-white rounded-xl shadow-xl p-6">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">{{ month_name }} {{ year }}</h2>
+                <div class="flex items-center space-x-4">
+                  {% if month > 1 %} 
+                    {% set prev_month = month - 1 %} 
+                    {% set prev_year = year %} 
+                  {% else %} 
+                    {% set prev_month = 12 %} 
+                    {% set prev_year = year - 1 %} 
+                  {% endif %} 
+                  {% if month < 12 %} 
+                    {% set next_month = month + 1 %} 
+                    {% set next_year = year %} 
+                  {% else %} 
+                    {% set next_month = 1 %} 
+                    {% set next_year = year + 1 %} 
+                  {% endif %}
+
+                  <a href="{{ url_for('jadwal_bulanan', year=prev_year, month=prev_month) }}" 
+                     class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all duration-300 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Bulan Lalu
+                  </a>
+                  <span class="text-lg font-semibold text-gray-700">{{ month_name }} {{ year }}</span>
+                  <a href="{{ url_for('jadwal_bulanan', year=next_year, month=next_month) }}" 
+                     class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all duration-300 flex items-center">
+                    Bulan Depan
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+
+            <!-- Calendar Grid -->
+            <div class="grid grid-cols-7 gap-2">
+              <!-- Header hari -->
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Sen</div>
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Sel</div>
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Rab</div>
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Kam</div>
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Jum</div>
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Sab</div>
+              <div class="text-center font-semibold text-gray-700 p-3 bg-gray-100 rounded-lg">Min</div>
+
+              <!-- Calendar days -->
+              {% for week in calendar_data %} {% for day in week %} {% if day == 0 %}
+              <div class="p-3"></div>
+              {% else %} {% set is_holiday = schedule_dict.get(day, {}).get('is_holiday', False) %} {% set has_schedule = day in schedule_dict %}
+              <div
+                class="calendar-day p-3 border rounded-lg cursor-pointer transition-all duration-300 hover:bg-gray-50 
+                               {{ 'bg-red-100 border-red-300' if is_holiday else 'bg-white border-gray-200' }}
+                               {{ 'ring-2 ring-blue-300' if has_schedule else '' }}"
+                onclick="openScheduleModal({{ day }})"
+              >
+                <div class="text-center">
+                  <div class="font-semibold text-lg mb-1">{{ day }}</div>
+                  {% if has_schedule %}
+                  <div class="text-xs text-gray-600">
+                    {% if is_holiday %}
+                    <span class="text-red-600 font-semibold">Libur</span>
+                    {% else %}
+                    <div>{{ schedule_dict[day].start_arrival[:5] }} - {{ schedule_dict[day].departure_time[:5] }}</div>
+                    {% endif %}
+                  </div>
+                  {% else %}
+                  <div class="text-xs text-gray-400">Default</div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %} {% endfor %} {% endfor %}
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-6 flex flex-wrap gap-4 text-sm">
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-white border border-gray-200 rounded mr-2"></div>
+                <span>Hari Kerja Normal</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-red-100 border border-red-300 rounded mr-2"></div>
+                <span>Hari Libur</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-white border-2 border-blue-300 rounded mr-2"></div>
+                <span>Jadwal Khusus</span>
+              </div>
+            </div>
+
+            <div class="mt-6 bg-blue-50 rounded-lg p-4">
+              <div class="flex items-start">
+                <svg class="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="text-sm text-blue-800">
+                  <p class="font-medium mb-1">Informasi Jadwal Bulanan:</p>
+                  <ul class="list-disc list-inside space-y-1 text-blue-700">
+                    <li>Klik pada tanggal untuk mengatur jadwal khusus atau menandai sebagai libur</li>
+                    <li>Hari Minggu secara default di-set sebagai hari libur</li>
+                    <li>Jadwal yang tidak di-set akan menggunakan jadwal umum (tab Jadwal Umum)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- General Schedule Tab -->
+        <div id="generalSchedule" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-xl p-8">
+            <div class="mb-8">
+              <h2 class="text-3xl font-bold gradient-heading mb-2">Pengaturan Jadwal Umum</h2>
+              <p class="text-gray-600 mb-4">Tetapkan waktu absensi default untuk setiap hari dalam seminggu</p>
+            </div>
+
+            <form id="generalScheduleForm" action="{{ url_for('jadwal_bulanan') }}" method="post" onsubmit="return validateGeneralScheduleForm()">
+              <input type="hidden" name="action" value="update_general_schedule">
+              <div class="overflow-x-auto">
+                <table class="w-full table-auto border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                  <thead class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                    <tr>
+                      <th class="border border-gray-300 px-6 py-4 text-left font-semibold">Hari</th>
+                      <th class="border border-gray-300 px-6 py-4 text-left font-semibold">Jam Mulai Absensi</th>
+                      <th class="border border-gray-300 px-6 py-4 text-left font-semibold">Batas Terlambat</th>
+                      <th class="border border-gray-300 px-6 py-4 text-left font-semibold">Jam Pulang</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    {% for row in jadwal_umum %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                      <td class="border border-gray-300 px-6 py-4 font-medium text-gray-900">{{ row['hari'] }}</td>
+                      <td class="border border-gray-300 px-6 py-4">
+                        <input 
+                          type="time" 
+                          name="start_arrival_{{ row['hari'] }}" 
+                          value="{{ row['start_arrival'][:5] if row['start_arrival'] else '06:00' }}" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                          required
+                        />
+                      </td>
+                      <td class="border border-gray-300 px-6 py-4">
+                        <input 
+                          type="time" 
+                          name="late_arrival_{{ row['hari'] }}" 
+                          value="{{ row['late_arrival'][:5] if row['late_arrival'] else '07:00' }}" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                          required
+                        />
+                      </td>
+                      <td class="border border-gray-300 px-6 py-4">
+                        <input 
+                          type="time" 
+                          name="departure_time_{{ row['hari'] }}" 
+                          value="{{ row['departure_time'][:5] if row['departure_time'] else '15:00' }}" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                          required
+                        />
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-6 bg-indigo-50 rounded-lg p-4 mb-8">
+                <div class="flex items-start">
+                  <svg class="w-5 h-5 text-indigo-600 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div class="text-sm text-indigo-800">
+                    <p class="font-medium mb-1">Informasi Jadwal Umum:</p>
+                    <ul class="list-disc list-inside space-y-1 text-indigo-700">
+                      <li><strong>Jam Mulai Absensi:</strong> Waktu paling awal guru dapat melakukan absensi</li>
+                      <li><strong>Batas Terlambat:</strong> Batas waktu dimana setelahnya akan dianggap terlambat</li>
+                      <li><strong>Jam Pulang:</strong> Waktu paling awal guru dapat melakukan absensi pulang</li>
+                      <li>Jadwal ini akan digunakan sebagai default untuk tanggal yang tidak memiliki pengaturan khusus</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button 
+                  type="submit"
+                  class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center"
+                >
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                  </svg>
+                  Simpan Jadwal Umum
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal untuk Edit Jadwal Harian -->
+    <div id="scheduleModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full m-4 transform transition-all duration-300 scale-95" id="scheduleModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-blue-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold ml-4 text-gray-800">Atur Jadwal Tanggal <span id="modalDate"></span></h3>
+          </div>
+
+          <form id="scheduleForm" class="space-y-4">
+            <div class="flex items-center mb-4">
+              <input type="checkbox" id="isHoliday" class="mr-3 h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
+              <label for="isHoliday" class="text-sm font-medium text-gray-700">Hari Libur</label>
+            </div>
+
+            <div id="scheduleInputs">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jam Mulai Absensi</label>
+                <input type="time" id="startArrival" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Batas Terlambat</label>
+                <input type="time" id="lateArrival" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jam Pulang</label>
+                <input type="time" id="departureTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan (opsional)</label>
+              <input type="text" id="keterangan" placeholder="Contoh: Libur Nasional" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </form>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-between items-center">
+          <button onclick="resetToDefault()" class="px-4 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-colors font-medium flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Reset ke Default
+          </button>
+          <div class="flex gap-3">
+            <button onclick="closeScheduleModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors font-medium">Batal</button>
+            <button onclick="saveSchedule()" class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg font-medium">Simpan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Konfirmasi Logout -->
+    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95" id="logoutModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3">
+              <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold ml-4 text-gray-800">Konfirmasi Logout</h3>
+          </div>
+          <p class="text-gray-600 mb-6 pl-2">Apakah Anda yakin ingin keluar dari sistem?</p>
+          <div class="flex justify-end gap-4">
+            <button onclick="hideLogoutModal()" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200">
+              Batal
+            </button>
+            <a href="{{ url_for('admin_logout') }}" class="px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg font-medium">
+              Ya, Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg hidden transform transition-all duration-300 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span id="notification-text"></span>
+    </div>
+
+    <!-- Script References -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/templates/jadwal_bulanan.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+
+    <script>
+      // Pass data to JavaScript
+      window.scheduleData = {{ schedule_dict | tojson }};
+      window.currentYear = {{ year }};
+      window.currentMonth = {{ month }};
+    </script>
+  </body>
+</html>

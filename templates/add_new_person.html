@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tambah Orang Baru - Fine-Tuning Otomatis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .upload-zone {
+        border: 2px dashed #cbd5e0;
+        transition: all 0.3s ease;
+      }
+      .upload-zone:hover {
+        border-color: #4299e1;
+        background-color: #ebf8ff;
+      }
+      .upload-zone.dragover {
+        border-color: #3182ce;
+        background-color: #bee3f8;
+      }
+      .image-preview {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+      .progress-bar {
+        transition: width 0.3s ease;
+      }
+      .guidelines {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-gray-800">➕ Tambah Orang Baru</h1>
+          <div class="space-x-2">
+            <a href="{{ url_for('fine_tuning_status') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+              📊 Monitor Status
+            </a>
+            <a href="{{ url_for('lihat_absensi') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+              Kembali
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for category, message in messages %}
+        {% if category == 'error' %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{{ message }}</div>
+        {% else %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ message }}</div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Guidelines -->
+      <div class="guidelines text-white rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">🎯 Panduan Fine-Tuning Otomatis</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold mb-2">📸 Persyaratan Gambar:</h3>
+            <ul class="list-disc list-inside text-sm space-y-1">
+              <li><strong>Minimal 15 gambar</strong> per orang (rekomendasi: 20-25)</li>
+              <li><strong>Format:</strong> JPG, PNG, BMP (maks 5MB per gambar)</li>
+              <li><strong>Resolusi:</strong> 640x640 pixel optimal</li>
+              <li><strong>Kualitas:</strong> Gambar jelas, tidak blur</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-2">🔄 Proses Otomatis:</h3>
+            <ul class="list-disc list-inside text-sm space-y-1">
+              <li>Validasi gambar otomatis</li>
+              <li>Fine-tuning model dalam background</li>
+              <li>Anti-catastrophic forgetting</li>
+              <li>Deploy model otomatis setelah selesai</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Form -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <form id="uploadForm" enctype="multipart/form-data">
+          <!-- Person Info -->
+          <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Orang *</label>
+              <input
+                type="text"
+                id="personName"
+                name="person_name"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Masukkan nama lengkap"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select id="personType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <option value="existing">Guru Existing</option>
+                <option value="new">Guru Baru</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Existing Teacher Selection -->
+          <div id="existingTeacherDiv" class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Guru Existing</label>
+            <select id="guruId" name="guru_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Pilih Guru...</option>
+              {% for teacher in teachers %}
+              <option value="{{ teacher.id }}">{{ teacher.nama }} - {{ teacher.kelas }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- New Teacher Info -->
+          <div id="newTeacherDiv" class="hidden mb-6">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+                <input
+                  type="text"
+                  name="kelas"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Contoh: 5A, 3B"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">No. Induk</label>
+                <input
+                  type="text"
+                  name="no_induk"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nomor induk guru"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Upload -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Gambar (Min: 15, Maks: 50)</label>
+            <div class="upload-zone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer" id="uploadZone">
+              <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <p class="text-gray-600 mb-2">Drag & drop gambar atau klik untuk browse</p>
+              <p class="text-sm text-gray-500">Support: JPG, PNG, BMP • Max: 5MB per gambar</p>
+            </div>
+            <input type="file" id="imageFiles" name="images" multiple accept="image/*" style="display: none" />
+          </div>
+
+          <!-- Image Preview -->
+          <div id="imagePreview" class="hidden mb-6">
+            <h3 class="font-semibold text-gray-800 mb-3">Preview Gambar (<span id="imageCount">0</span>)</h3>
+            <div id="previewContainer" class="grid grid-cols-6 gap-3 max-h-96 overflow-y-auto"></div>
+          </div>
+
+          <!-- Upload Progress -->
+          <div id="uploadProgress" class="hidden mb-6">
+            <div class="bg-gray-200 rounded-full h-4 mb-2">
+              <div id="progressBar" class="bg-blue-500 h-4 rounded-full progress-bar" style="width: 0%"></div>
+            </div>
+            <p id="progressText" class="text-sm text-gray-600">Memproses...</p>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end space-x-4">
+            <button type="button" id="resetBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">
+              Reset
+            </button>
+            <button type="submit" id="submitBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg disabled:opacity-50" disabled>
+              🚀 Mulai Fine-Tuning
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="text-center">
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Upload Berhasil!</h3>
+          <p class="text-sm text-gray-500 mb-4" id="successMessage"></p>
+          <div class="flex justify-center space-x-3">
+            <button id="monitorBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+              Monitor Progress
+            </button>
+            <button id="closeModal" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const uploadZone = document.getElementById('uploadZone');
+      const imageFiles = document.getElementById('imageFiles');
+      const imagePreview = document.getElementById('imagePreview');
+      const previewContainer = document.getElementById('previewContainer');
+      const imageCount = document.getElementById('imageCount');
+      const personType = document.getElementById('personType');
+      const existingTeacherDiv = document.getElementById('existingTeacherDiv');
+      const newTeacherDiv = document.getElementById('newTeacherDiv');
+      const uploadForm = document.getElementById('uploadForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+      const successModal = document.getElementById('successModal');
+      const monitorBtn = document.getElementById('monitorBtn');
+      const closeModal = document.getElementById('closeModal');
+
+      let selectedFiles = [];
+      let currentTaskId = null;
+
+      // Event Listeners
+      uploadZone.addEventListener('click', () => imageFiles.click());
+      uploadZone.addEventListener('dragover', handleDragOver);
+      uploadZone.addEventListener('dragleave', handleDragLeave);
+      uploadZone.addEventListener('drop', handleDrop);
+      imageFiles.addEventListener('change', handleFileSelect);
+      personType.addEventListener('change', handlePersonTypeChange);
+      uploadForm.addEventListener('submit', handleSubmit);
+      resetBtn.addEventListener('click', resetForm);
+      monitorBtn.addEventListener('click', () => {
+        window.location.href = '{{ url_for("fine_tuning_status") }}';
+      });
+      closeModal.addEventListener('click', () => {
+        successModal.classList.add('hidden');
+        resetForm();
+      });
+
+      // Drag & Drop Handlers
+      function handleDragOver(e) {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+      }
+
+      function handleDragLeave(e) {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files);
+        handleFiles(files);
+      }
+
+      function handleFileSelect(e) {
+        const files = Array.from(e.target.files);
+        handleFiles(files);
+      }
+
+      function handleFiles(files) {
+        // Filter image files
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+        
+        if (imageFiles.length === 0) {
+          alert('Pilih file gambar yang valid!');
+          return;
+        }
+
+        if (imageFiles.length > 50) {
+          alert('Maksimal 50 gambar yang dapat diupload!');
+          return;
+        }
+
+        selectedFiles = imageFiles;
+        updateImagePreview();
+        updateSubmitButton();
+      }
+
+      function updateImagePreview() {
+        if (selectedFiles.length === 0) {
+          imagePreview.classList.add('hidden');
+          return;
+        }
+
+        imagePreview.classList.remove('hidden');
+        imageCount.textContent = selectedFiles.length;
+        previewContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'image-preview border border-gray-300';
+            img.title = file.name;
+            
+            const container = document.createElement('div');
+            container.className = 'relative';
+            container.appendChild(img);
+            
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.className = 'absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs hover:bg-red-600';
+            removeBtn.onclick = () => removeImage(index);
+            container.appendChild(removeBtn);
+            
+            previewContainer.appendChild(container);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function removeImage(index) {
+        selectedFiles.splice(index, 1);
+        updateImagePreview();
+        updateSubmitButton();
+      }
+
+      function updateSubmitButton() {
+        const personName = document.getElementById('personName').value.trim();
+        const hasEnoughImages = selectedFiles.length >= 15;
+        
+        submitBtn.disabled = !personName || !hasEnoughImages;
+        
+        if (!hasEnoughImages && selectedFiles.length > 0) {
+          submitBtn.textContent = `Perlu ${15 - selectedFiles.length} gambar lagi`;
+        } else if (hasEnoughImages) {
+          submitBtn.textContent = '🚀 Mulai Fine-Tuning';
+        } else {
+          submitBtn.textContent = '🚀 Mulai Fine-Tuning';
+        }
+      }
+
+      function handlePersonTypeChange() {
+        const isNew = personType.value === 'new';
+        if (isNew) {
+          existingTeacherDiv.classList.add('hidden');
+          newTeacherDiv.classList.remove('hidden');
+          document.getElementById('guruId').value = '';
+        } else {
+          existingTeacherDiv.classList.remove('hidden');
+          newTeacherDiv.classList.add('hidden');
+        }
+      }
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        
+        if (selectedFiles.length < 15) {
+          alert('Minimal 15 gambar diperlukan untuk fine-tuning!');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('person_name', document.getElementById('personName').value);
+        formData.append('is_new_teacher', personType.value === 'new');
+        
+        if (personType.value === 'existing') {
+          formData.append('guru_id', document.getElementById('guruId').value);
+        } else {
+          formData.append('kelas', document.querySelector('input[name="kelas"]').value);
+          formData.append('no_induk', document.querySelector('input[name="no_induk"]').value);
+        }
+
+        selectedFiles.forEach(file => {
+          formData.append('images', file);
+        });
+
+        // Show progress
+        uploadProgress.classList.remove('hidden');
+        submitBtn.disabled = true;
+        progressText.textContent = 'Mengupload gambar...';
+        
+        // Simulate upload progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 10;
+          if (progress > 90) progress = 90;
+          progressBar.style.width = progress + '%';
+        }, 200);
+
+        fetch('{{ url_for("upload_new_person_data") }}', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          clearInterval(progressInterval);
+          progressBar.style.width = '100%';
+          
+          if (data.success) {
+            currentTaskId = data.task_id;
+            progressText.textContent = 'Upload selesai! Fine-tuning dimulai...';
+            
+            setTimeout(() => {
+              uploadProgress.classList.add('hidden');
+              document.getElementById('successMessage').textContent = 
+                `${data.image_count} gambar berhasil diupload. Fine-tuning untuk ${data.person_name} sedang berjalan di background.`;
+              successModal.classList.remove('hidden');
+            }, 1000);
+          } else {
+            alert('Error: ' + data.error);
+            uploadProgress.classList.add('hidden');
+            submitBtn.disabled = false;
+          }
+        })
+        .catch(error => {
+          clearInterval(progressInterval);
+          alert('Error: ' + error);
+          uploadProgress.classList.add('hidden');
+          submitBtn.disabled = false;
+        });
+      }
+
+      function resetForm() {
+        selectedFiles = [];
+        updateImagePreview();
+        updateSubmitButton();
+        uploadForm.reset();
+        uploadProgress.classList.add('hidden');
+        progressBar.style.width = '0%';
+        handlePersonTypeChange();
+      }
+
+      // Update submit button on name change
+      document.getElementById('personName').addEventListener('input', updateSubmitButton);
+
+      // Initialize
+      handlePersonTypeChange();
+    </script>
+  </body>
+</html>

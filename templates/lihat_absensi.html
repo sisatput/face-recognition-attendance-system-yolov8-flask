@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rekap Data Absensi</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/web.png') }}" type="image/png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+    <style>
+      .gradient-heading {
+        background: linear-gradient(90deg, #4338ca, #6366f1);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-50 font-[Poppins]">
+    <div class="min-h-screen flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow-lg animate-fade-in">
+        <nav class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white p-2 rounded-xl shadow-lg">
+              <img src="{{ url_for('static', filename='images/logo_sekolah.png') }}" class="h-12 w-auto" alt="Logo SD Negeri 1 Purbalingga Lor" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold gradient-heading">Admin Panel</h1>
+              <p class="text-sm text-gray-600">SD Negeri 1 Purbalingga Lor</p>
+            </div>
+          </div>
+          <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+            <a href="{{ url_for('atur_jadwal') }}" class="flex items-center px-5 py-2 bg-white border border-primary-200 hover:border-primary-300 text-primary-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md group">
+              <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>Atur Jadwal</span>
+            </a>
+            <a href="{{ url_for('upload_training_data') }}" class="flex items-center px-5 py-2 bg-white border border-green-200 hover:border-green-300 text-green-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md">
+              <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <span>Upload Data Model</span>
+            </a>
+            <a href="{{ url_for('add_new_person') }}" class="flex items-center px-5 py-2 bg-white border border-blue-200 hover:border-blue-300 text-blue-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              <span>Tambah Orang Baru</span>
+            </a>
+            <a href="{{ url_for('model_management') }}" class="flex items-center px-5 py-2 bg-white border border-purple-200 hover:border-purple-300 text-purple-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md">
+              <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <span>Kelola Model AI</span>
+            </a>
+            <a href="{{ url_for('change_password') }}" class="flex items-center px-5 py-2 bg-white border border-primary-200 hover:border-primary-300 text-primary-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md">
+              <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              <span>Ubah Password</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="flex items-center px-5 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-xl transition-all duration-300 shadow hover:shadow-md">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Beranda</span>
+            </a>
+            <a
+              href="javascript:void(0);"
+              onclick="showLogoutModal()"
+              class="flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all duration-300 shadow hover:shadow-md"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
+            </a>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Main Content - add animation -->
+      <main class="flex-1 animate-slide-down">
+        <div class="max-w-7xl mx-auto px-4 py-10">
+          <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+            <div class="p-6">
+              <!-- Filter Tanggal -->
+              <form method="get" action="{{ url_for('lihat_absensi') }}" class="flex flex-col sm:flex-row items-center gap-4 mb-8">
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                  <label for="start_date" class="text-sm font-medium text-gray-700">Mulai Tanggal:</label>
+                  <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                  <label for="end_date" class="text-sm font-medium text-gray-700">Sampai Tanggal:</label>
+                  <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition duration-200 shadow">Tampilkan Data</button>
+              </form>
+
+              <!-- Navigation to Monthly Schedule -->
+              <div class="mb-6 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800">Data Absensi</h2>
+                <a
+                  href="{{ url_for('jadwal_bulanan') }}"
+                  class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center"
+                >
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  Jadwal Bulanan
+                </a>
+              </div>
+
+              <!-- Tabel Data Absensi -->
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 table-compact">
+                  <thead class="bg-indigo-50">
+                    <tr>
+                      <th class="px-3 py-3 text-center">
+                        <input type="checkbox" id="selectAll" class="form-checkbox h-5 w-5 text-indigo-600 rounded transition duration-150 ease-in-out" onchange="toggleAllCheckboxes(this)" />
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Absen</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Kedatangan</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pulang</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Kedatangan</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Keberadaan</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lama Kerja</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Feedback</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    {% for row in data_absensi %}
+                    <tr class="hover:bg-gray-100 transition duration-150">
+                      <td class="px-3 py-4 whitespace-nowrap text-center">
+                        <input type="checkbox" class="row-checkbox form-checkbox h-5 w-5 text-indigo-600 rounded transition duration-150 ease-in-out" data-id="{{ row['id'] }}" data-name="{{ row['nama'] }}" data-date="{{ row['date'] }}" />
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ row['daily_id'] }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ row['nama'] }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{% if row['arrival_time'] and " " in row['arrival_time'] %} {{ row['arrival_time'].split(" ")[1] }} {% else %} - {% endif %}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{% if row['departure_time'] and " " in row['departure_time'] %} {{ row['departure_time'].split(" ")[1] }} {% else %} - {% endif %}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if row['status_kedatangan'] %} {% if row['status_kedatangan'] == 'Tepat Waktu' %}
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">{{ row['status_kedatangan'] }}</span>
+                        {% elif row['status_kedatangan'] == 'Terlambat' %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">{{ row['status_kedatangan'] }}</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{{ row['status_kedatangan'] }}</span>
+                        {% endif %} {% else %}
+                        <span class="text-gray-400">-</span>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if row['status_keberadaan'] %} {% if row['status_keberadaan'] == 'Sudah Ada' %}
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">{{ row['status_keberadaan'] }}</span>
+                        {% elif row['status_keberadaan'] == 'Tidak Ada' %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{{ row['status_keberadaan'] }}</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">{{ row['status_keberadaan'] }}</span>
+                        {% endif %} {% else %}
+                        <span class="text-gray-400">-</span>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {% if row['lama_kerja'] and row['lama_kerja'] > 0 %} {% set hours = (row['lama_kerja'] // 60) %} {% set minutes = (row['lama_kerja'] % 60) %} {{ hours }}j {{ minutes }}m {% else %}
+                        <span class="text-gray-400">-</span>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if row['status_feedback'] %} {% if row['status_feedback'] == 'Normal' %}
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">{{ row['status_feedback'] }}</span>
+                        {% elif row['status_feedback'] == 'Pulang Cepat' %}
+                        <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">{{ row['status_feedback'] }}</span>
+                        {% elif row['status_feedback'] == 'Lembur' %}
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">{{ row['status_feedback'] }}</span>
+                        {% elif row['status_feedback'] == 'Durasi Kerja Kurang' %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">{{ row['status_feedback'] }}</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{{ row['status_feedback'] }}</span>
+                        {% endif %} {% else %}
+                        <span class="text-gray-400">-</span>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <script>
+                          document.write(
+                            (() => {
+                              const date = "{{ row['date'] }}";
+                              if (!date) return "";
+                              const [year, month, day] = date.split("-");
+
+                              const bulanIndonesia = {
+                                "01": "Januari",
+                                "02": "Februari",
+                                "03": "Maret",
+                                "04": "April",
+                                "05": "Mei",
+                                "06": "Juni",
+                                "07": "Juli",
+                                "08": "Agustus",
+                                "09": "September",
+                                10: "Oktober",
+                                11: "November",
+                                12: "Desember",
+                              };
+
+                              return `${day} ${bulanIndonesia[month]} ${year}`;
+                            })()
+                          );
+                        </script>
+                      </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td colspan="10" class="px-6 py-4 text-center text-gray-500">Tidak ada data absensi untuk rentang tanggal ini.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <!-- Tombol Ekspor & Hapus Data -->
+              <div class="mt-8 flex flex-col sm:flex-row justify-between gap-4">
+                <div class="flex flex-col sm:flex-row items-start gap-4">
+                  <button onclick="exportData()" class="w-full sm:w-auto px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-200 flex items-center shadow">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export Excel
+                  </button>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onclick="showDeleteSelectedModal()"
+                    id="deleteSelectedBtn"
+                    disabled
+                    class="w-full sm:w-auto px-6 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition duration-200 flex items-center shadow"
+                  >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6" />
+                    </svg>
+                    Hapus Data Terpilih (<span id="selectedCount">0</span>)
+                  </button>
+                  <button onclick="showDeleteFilterModal()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition duration-200 font-medium flex items-center shadow">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6" />
+                    </svg>
+                    Hapus Data Filter
+                  </button>
+                  <button onclick="showDeleteAllModal()" class="px-6 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg transition duration-200 font-medium flex items-center shadow">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    Hapus Semua Data
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal Hapus Data Filter -->
+    <div id="deleteFilterModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95" id="deleteFilterModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold ml-4 text-gray-800">Konfirmasi Penghapusan Data</h3>
+          </div>
+          <p class="text-gray-600 mb-6 pl-2">Apakah Anda yakin ingin menghapus data absensi untuk rentang tanggal tersebut?</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+          <button onclick="hideDeleteFilterModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors font-medium">Batal</button>
+          <button onclick="deleteFilterDataConfirmed()" class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg font-medium">
+            Ya, Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Hapus Semua Data -->
+    <div id="deleteAllModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95" id="deleteAllModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold ml-4 text-gray-800">Konfirmasi Penghapusan Semua Data</h3>
+          </div>
+          <p class="text-gray-600 mb-6 pl-2">Apakah Anda yakin ingin menghapus seluruh data absensi?</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+          <button onclick="hideDeleteAllModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors font-medium">Batal</button>
+          <button onclick="deleteAllDataConfirmed()" class="px-5 py-2.5 bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-white rounded-lg transition-colors shadow-md hover:shadow-lg font-medium">
+            Ya, Hapus Semua
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Konfirmasi Kedua untuk Hapus Semua Data -->
+    <div id="finalDeleteAllModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95" id="finalDeleteAllModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold ml-4 text-gray-800">Peringatan Final!</h3>
+          </div>
+          <p class="text-red-600 font-medium mb-2 pl-2">Tindakan ini tidak dapat dibatalkan!</p>
+          <p class="text-gray-600 mb-6 pl-2">Semua data absensi akan dihapus secara permanen dari sistem. Anda yakin ingin melanjutkan?</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+          <button onclick="hideFinalDeleteAllModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors font-medium">Batalkan</button>
+          <button
+            onclick="finalDeleteAllConfirmed()"
+            class="px-5 py-2.5 bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950 text-white rounded-lg transition-colors shadow-md hover:shadow-lg font-medium flex items-center"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7" />
+            </svg>
+            Ya, Saya Yakin
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Konfirmasi Logout -->
+    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95" id="logoutModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold ml-4 text-gray-800">Konfirmasi Logout</h3>
+          </div>
+          <p class="text-gray-600 mb-6 pl-2">Apakah Anda yakin ingin keluar dari sistem?</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+          <button onclick="hideLogoutModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors font-medium">Batal</button>
+          <a
+            href="{{ url_for('admin_logout') }}"
+            class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg font-medium flex items-center justify-center"
+          >
+            Ya, Logout
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteSelectedModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full m-4 transform transition-all duration-300 scale-95" id="deleteSelectedModalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-orange-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold ml-4 text-gray-800">Konfirmasi Penghapusan</h3>
+          </div>
+          <p class="text-gray-600 mb-2 pl-2">Anda akan menghapus <span id="selectedItemsCount" class="font-semibold text-orange-600">0</span> data absensi yang dipilih.</p>
+          <div id="selectedItemsPreview" class="max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-lg text-sm text-gray-700 mb-4">
+            <!-- Daftar item yang dipilih akan ditampilkan di sini -->
+          </div>
+          <p class="text-gray-600 mb-4 pl-2">Apakah Anda yakin ingin melanjutkan?</p>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+          <button onclick="hideDeleteSelectedModal()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors font-medium">Batal</button>
+          <button onclick="deleteSelectedData()" class="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg font-medium">
+            Hapus Data Terpilih
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popup Notifikasi -->
+    <div id="popup" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden"></div>
+
+    <!-- Script References -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/templates/lihat_absensi.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+  </body>
+</html>

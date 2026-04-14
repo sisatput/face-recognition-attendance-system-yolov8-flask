@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Absensi Real-Time</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/web.png') }}" type="image/png" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+  </head>
+  <body class="bg-gradient-to-br from-blue-100 to-indigo-200">
+    <div class="min-h-screen flex flex-col">
+      <!-- Header section -->
+      <header class="bg-white shadow-md border-b border-gray-200 animate-fade-in">
+        <nav class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white p-2 rounded-xl shadow-lg">
+              <img src="{{ url_for('static', filename='images/logo_sekolah.png') }}" class="h-12 w-auto" alt="Logo SD Negeri 1 Purbalingga Lor" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold gradient-heading">Sistem Absensi</h1>
+              <p class="text-sm text-gray-600">SD Negeri 1 Purbalingga Lor</p>
+            </div>
+          </div>
+          <div>
+            {% if authenticated %}
+            <!-- Dropdown untuk Admin -->
+            <div class="relative inline-block text-left" id="adminMenu">
+              <div>
+                <button
+                  type="button"
+                  class="flex items-center space-x-2 px-5 py-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="font-medium">Admin</span>
+                </button>
+              </div>
+              <div id="adminMenuDropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-xl bg-white ring-1 ring-black ring-opacity-5 hidden">
+                <div class="py-1">
+                  <a href="{{ url_for('lihat_absensi') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                    </svg>
+                    Lihat Absensi
+                  </a>
+                  <a href="{{ url_for('daily_attendance') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                    Status Harian
+                  </a>
+                  <a href="{{ url_for('atur_jadwal') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Atur Jadwal
+                  </a>
+                  <a href="{{ url_for('change_password') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    Ubah Password
+                  </a>
+                  <hr class="my-1 border-gray-200" />
+                  <a href="javascript:void(0);" onclick="showLogoutModal()" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <!-- Tampilkan "Login" jika belum login -->
+            <a
+              href="{{ url_for('set_schedule') }}"
+              class="flex items-center space-x-2 px-5 py-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              <span class="font-medium">Login</span>
+            </a>
+            {% endif %}
+          </div>
+        </nav>
+      </header>
+
+      <!-- Holiday Notification -->
+      {% if is_holiday %}
+      <div class="bg-red-50 border border-red-200 animate-fade-in">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+          <div class="flex items-center justify-center">
+            <div class="flex items-center space-x-3">
+              <div class="bg-red-100 rounded-full p-2">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="text-center">
+                <p class="text-red-800 font-semibold text-lg">Hari Ini Libur</p>
+                {% if holiday_message %}
+                <p class="text-red-600 text-sm">{{ holiday_message }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Main Content -->
+      <main class="flex-1 py-10 animate-slide-down">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-10">
+            <!-- Camera Feed Card -->
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <div class="px-8 py-6 border-b border-gray-200 flex items-center space-x-4 bg-gradient-to-l from-indigo-50 to-white">
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <h3 class="text-2xl font-semibold text-gray-800">Live Camera Feed</h3>
+              </div>
+              <div class="camera-container">
+                <!-- Server-side video feed with face detection -->
+                <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Live Feed" class="w-full h-full object-cover" />
+                <!-- Loading overlay REMOVED - direct video display -->
+              </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="space-y-8">
+              <!-- Attendance Status Card -->
+              <div class="bg-white rounded-3xl shadow-2xl px-8 py-6">
+                <div class="flex items-center space-x-6">
+                  <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-indigo-600">Status Deteksi Wajah</p>
+                    <p id="detectedName" class="text-4xl font-bold text-indigo-800">-</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manual Attendance Button -->
+              <button onclick="manualAttendance()" class="w-full flex items-center justify-center space-x-3 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all duration-300 shadow-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span class="text-xl font-semibold">Absen Manual</span>
+              </button>
+
+              <!-- Instruction Text -->
+              <div class="text-center">
+                <p class="text-gray-500 text-lg">Tekan <kbd class="px-3 py-1 bg-gray-100 rounded-lg font-medium shadow-inner">Enter</kbd> untuk absensi Manual</p>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="grid grid-cols-1">
+                <a href="{{ url_for('simple_absensi') }}" class="group p-6 bg-white hover:bg-indigo-50 rounded-3xl shadow-2xl transition-all duration-300 flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center">
+                      <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-2xl font-bold text-gray-800 group-hover:text-indigo-700">Daftar Absensi</h3>
+                      <p class="text-lg text-gray-500">Absensi Hari Ini</p>
+                    </div>
+                  </div>
+                  <svg class="w-8 h-8 text-gray-400 group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="popup" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden transform transition-all duration-300 animate-fade-in flex items-center space-x-2">
+      <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span class="text-lg font-medium"></span>
+    </div>
+
+    <!-- Modal Konfirmasi Logout -->
+    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95" id="modalContent">
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-red-100 rounded-full p-3">
+              <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold ml-4 text-gray-800">Konfirmasi Logout</h3>
+          </div>
+          <p class="text-gray-600 mb-6 pl-2">Apakah Anda yakin ingin keluar dari sistem?</p>
+          <div class="flex justify-end gap-4">
+            <button onclick="hideLogoutModal()" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200">
+              Batal
+            </button>
+            <a href="{{ url_for('admin_logout') }}" class="px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg font-medium">
+              Ya, Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script References -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/templates/index.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+  </body>
+</html>

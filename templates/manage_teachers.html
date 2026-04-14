@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kelola Data Guru</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/web.png') }}" type="image/png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-50 font-[Poppins]">
+    <div class="min-h-screen flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow-lg">
+        <nav class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="bg-white p-2 rounded-xl shadow-lg">
+              <img src="{{ url_for('static', filename='images/logo_sekolah.png') }}" class="h-12 w-auto" alt="Logo" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Kelola Data Guru</h1>
+              <p class="text-sm text-gray-600">SD Negeri 1 Purbalingga Lor</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <a href="{{ url_for('daily_attendance') }}" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002-2h2a2 2 0 002 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+              </svg>
+              Status Harian
+            </a>
+            <a href="{{ url_for('lihat_absensi') }}" class="flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                ></path>
+              </svg>
+              Kembali
+            </a>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+      <div class="max-w-7xl mx-auto px-4 mt-4">
+        {% for category, message in messages %}
+        <div
+          class="alert alert-{{ 'success' if category == 'success' else 'error' }} mb-4 p-4 rounded-lg {{ 'bg-green-100 text-green-700 border border-green-200' if category == 'success' else 'bg-red-100 text-red-700 border border-red-200' }}"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Main Content -->
+      <main class="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
+        <!-- Action Buttons -->
+        <div class="mb-6 flex flex-wrap gap-4">
+          <button onclick="toggleAddForm()" class="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Tambah Guru
+          </button>
+          <button onclick="initSampleData()" class="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            Inisialisasi Data Sample (25 Kelas)
+          </button>
+        </div>
+
+        <!-- Add Teacher Form -->
+        <div id="addTeacherForm" class="hidden bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h3 class="text-lg font-semibold mb-4">Tambah Guru Baru</h3>
+          <form method="POST">
+            <input type="hidden" name="action" value="add" />
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Guru</label>
+                <input type="text" name="nama" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+                <input type="text" name="kelas" required placeholder="contoh: I.1A, II.2B" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">No. Induk (Opsional)</label>
+                <input type="text" name="no_induk" placeholder="GTK001" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">Simpan</button>
+              <button type="button" onclick="toggleAddForm()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">Batal</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Teachers Table -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Daftar Guru ({{ teachers|length }} orang)</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Induk</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                {% for teacher in teachers %}
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ loop.index }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ teacher[1] }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ teacher[2] }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ teacher[4] or '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ 'bg-green-100 text-green-800' if teacher[3] == 'Aktif' else 'bg-red-100 text-red-800' }}"> {{ teacher[3] }} </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <button onclick="editTeacher({{ teacher[0] }}, '{{ teacher[1] }}', '{{ teacher[2] }}', '{{ teacher[3] }}', '{{ teacher[4] or '' }}')" class="text-blue-600 hover:text-blue-900">Edit</button>
+                    <form method="POST" style="display: inline" onsubmit="return confirm('Yakin ingin menghapus guru ini?')">
+                      <input type="hidden" name="action" value="delete" />
+                      <input type="hidden" name="teacher_id" value="{{ teacher[0] }}" />
+                      <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada data guru. Klik "Inisialisasi Data Sample" untuk membuat data 25 kelas secara otomatis.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold mb-4">Edit Data Guru</h3>
+        <form method="POST" id="editForm">
+          <input type="hidden" name="action" value="update" />
+          <input type="hidden" name="teacher_id" id="editTeacherId" />
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Guru</label>
+              <input type="text" name="nama" id="editNama" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+              <input type="text" name="kelas" id="editKelas" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select name="status" id="editStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="Aktif">Aktif</option>
+                <option value="Tidak Aktif">Tidak Aktif</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">No. Induk</label>
+              <input type="text" name="no_induk" id="editNoInduk" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+          </div>
+          <div class="flex gap-2 mt-6">
+            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Update</button>
+            <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">Batal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function toggleAddForm() {
+        const form = document.getElementById("addTeacherForm");
+        form.classList.toggle("hidden");
+      }
+
+      function editTeacher(id, nama, kelas, status, noInduk) {
+        document.getElementById("editTeacherId").value = id;
+        document.getElementById("editNama").value = nama;
+        document.getElementById("editKelas").value = kelas;
+        document.getElementById("editStatus").value = status;
+        document.getElementById("editNoInduk").value = noInduk;
+        document.getElementById("editModal").classList.remove("hidden");
+      }
+
+      function closeEditModal() {
+        document.getElementById("editModal").classList.add("hidden");
+      }
+
+      function initSampleData() {
+        if (confirm("Ini akan menambahkan data sample guru untuk 25 kelas. Lanjutkan?")) {
+          fetch("/init_sample_teachers", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert(data.message);
+                location.reload();
+              } else {
+                alert("Error: " + data.error);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Terjadi kesalahan saat inisialisasi data");
+            });
+        }
+      }
+    </script>
+  </body>
+</html>

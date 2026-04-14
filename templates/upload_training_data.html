@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Data Training - Sistem Absensi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .drop-zone {
+        border: 2px dashed #cbd5e0;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .drop-zone:hover {
+        border-color: #4299e1;
+        background-color: #ebf8ff;
+      }
+      .drop-zone.dragover {
+        border-color: #3182ce;
+        background-color: #bee3f8;
+      }
+      .file-info {
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+      .upload-guidelines {
+        background: #fffaf0;
+        border: 1px solid #fed7aa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .format-example {
+        background: #f0fff4;
+        border: 1px solid #9ae6b4;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-gray-800">Upload Data Training</h1>
+          <div class="space-x-2">
+            <a href="{{ url_for('view_datasets') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"> Lihat Dataset </a>
+            <a href="{{ url_for('lihat_absensi') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"> Kembali </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for category, message in messages %} {% if category == 'error' %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{{ message }}</div>
+        {% elif category == 'warning' %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">{{ message }}</div>
+        {% else %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ message }}</div>
+        {% endif %} {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Upload Guidelines -->
+      <div class="upload-guidelines mb-6">
+        <h2 class="text-xl font-semibold text-orange-800 mb-3">📋 Panduan Upload Data Training</h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold text-orange-700 mb-2">✅ Format File yang Didukung:</h3>
+            <ul class="list-disc list-inside text-sm space-y-1">
+              <li><strong>ZIP File:</strong> Dataset lengkap dengan struktur YOLO</li>
+              <li><strong>Gambar:</strong> JPG, JPEG, PNG, BMP, TIFF</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-orange-700 mb-2">📏 Batasan Upload:</h3>
+            <ul class="list-disc list-inside text-sm space-y-1">
+              <li>Ukuran maksimum: <strong>500 MB</strong></li>
+              <li>Resolusi gambar: <strong>100x100 - 4000x4000 pixel</strong></li>
+              <li>Minimal <strong>10 gambar</strong> per dataset</li>
+              <li>Format label: <strong>YOLO (.txt)</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dataset Structure Example -->
+      <div class="format-example mb-6">
+        <h3 class="font-semibold text-green-700 mb-3">📁 Struktur Dataset YOLO (untuk file ZIP):</h3>
+        <pre class="text-sm text-green-800 overflow-x-auto">
+dataset.zip
+├── images/           # Folder berisi gambar
+│   ├── image1.jpg
+│   ├── image2.jpg
+│   └── ...
+└── labels/           # Folder berisi file label
+    ├── image1.txt    # Label untuk image1.jpg
+    ├── image2.txt    # Label untuk image2.jpg
+    └── ...
+
+Format file label (.txt):
+class_id x_center y_center width height
+Contoh: 0 0.5 0.5 0.3 0.4
+(nilai koordinat dalam range 0.0 - 1.0)
+            </pre
+        >
+      </div>
+
+      <!-- Upload Form -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+          <!-- Teacher Selection for Dataset -->
+          <div class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+            <h3 class="font-semibold text-green-800 mb-2">➕ Tambah Nama Guru Baru (Opsional)</h3>
+            <input type="text" name="nama_guru_baru" id="namaGuruBaru" class="w-full px-4 py-2 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Masukkan nama guru baru jika belum ada di daftar" />
+            <p class="text-xs text-green-600 mt-1">Jika diisi, guru baru akan otomatis ditambahkan ke database dan dataset akan dikaitkan ke guru tersebut.</p>
+          </div>
+
+          <!-- Teacher Selection for Dataset -->
+          <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-semibold text-blue-800 mb-3">👤 Pilih Guru (untuk Dataset)</h3>
+            <p class="text-sm text-blue-600 mb-3">Pilih guru yang akan dilatih dalam dataset ini. Kosongkan jika upload gambar umum.</p>
+            <select name="guru_id" id="guruSelect" class="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+              <option value="">-- Pilih Guru (Opsional) --</option>
+              {% for guru in teachers %}
+              <option value="{{ guru.id }}">{{ guru.nama }} - {{ guru.kelas or 'Tidak ada kelas' }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" name="file" accept=".zip,.jpg,.jpeg,.png,.bmp,.tiff" style="display: none" />
+            <div class="text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <p class="text-lg font-medium text-gray-700 mb-2">Drag & drop file di sini atau <span class="text-blue-600 underline">klik untuk pilih file</span></p>
+              <p class="text-sm text-gray-500">Maksimum 500MB • Format: ZIP, JPG, PNG, BMP, TIFF</p>
+            </div>
+          </div>
+
+          <div id="fileInfo" class="file-info" style="display: none">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium" id="fileName"></p>
+                <p class="text-sm text-gray-600" id="fileSize"></p>
+              </div>
+              <button type="button" id="removeFile" class="text-red-600 hover:text-red-800">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end space-x-4">
+            <button type="button" id="resetForm" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">Reset</button>
+            <button type="submit" id="uploadBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50" disabled>
+              <span id="uploadText">Upload Data</span>
+              <span id="uploadSpinner" class="hidden">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tips -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+        <h3 class="font-semibold text-blue-800 mb-2">💡 Tips untuk Dataset Berkualitas:</h3>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li>• Gunakan gambar dengan pencahayaan yang bervariasi</li>
+          <li>• Sertakan berbagai sudut pengambilan foto wajah</li>
+          <li>• Pastikan wajah terlihat jelas dan tidak blur</li>
+          <li>• Semakin banyak data training, semakin akurat model</li>
+          <li>• Untuk hasil terbaik, gunakan minimal 50-100 gambar per orang</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("fileInput");
+      const fileInfo = document.getElementById("fileInfo");
+      const fileName = document.getElementById("fileName");
+      const fileSize = document.getElementById("fileSize");
+      const removeFile = document.getElementById("removeFile");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadForm = document.getElementById("uploadForm");
+      const resetForm = document.getElementById("resetForm");
+      const uploadText = document.getElementById("uploadText");
+      const uploadSpinner = document.getElementById("uploadSpinner");
+
+      // Drag and drop functionality
+      dropZone.addEventListener("click", () => fileInput.click());
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+      });
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) {
+          fileInput.files = e.dataTransfer.files;
+          handleFileSelect();
+        }
+      });
+
+      fileInput.addEventListener("change", handleFileSelect);
+      removeFile.addEventListener("click", clearFile);
+      resetForm.addEventListener("click", clearFile);
+
+      function handleFileSelect() {
+        const file = fileInput.files[0];
+        if (file) {
+          fileName.textContent = file.name;
+          fileSize.textContent = formatFileSize(file.size);
+          fileInfo.style.display = "block";
+          uploadBtn.disabled = false;
+
+          // Validate file size
+          if (file.size > 500 * 1024 * 1024) {
+            // 500MB
+            alert("File terlalu besar! Maksimum 500MB.");
+            clearFile();
+            return;
+          }
+
+          // Validate file type
+          const allowedTypes = [".zip", ".jpg", ".jpeg", ".png", ".bmp", ".tiff"];
+          const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+          if (!allowedTypes.includes(fileExtension)) {
+            alert("Format file tidak didukung! Gunakan ZIP, JPG, PNG, BMP, atau TIFF.");
+            clearFile();
+            return;
+          }
+        }
+      }
+
+      function clearFile() {
+        fileInput.value = "";
+        fileInfo.style.display = "none";
+        uploadBtn.disabled = true;
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      // Form submission with loading state
+      uploadForm.addEventListener("submit", function (e) {
+        if (!fileInput.files[0]) {
+          e.preventDefault();
+          alert("Pilih file terlebih dahulu!");
+          return;
+        }
+
+        // Show loading state
+        uploadBtn.disabled = true;
+        uploadText.classList.add("hidden");
+        uploadSpinner.classList.remove("hidden");
+      });
+    </script>
+  </body>
+</html>

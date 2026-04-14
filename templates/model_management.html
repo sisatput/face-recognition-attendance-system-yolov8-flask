@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manajemen Model - Sistem Absensi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .model-card {
+        transition: all 0.3s ease;
+      }
+      .model-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+      .active-model {
+        border: 2px solid #10b981;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      }
+      .inactive-model {
+        border: 2px solid #e5e7eb;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-gray-800">🤖 Manajemen Model AI</h1>
+          <div class="space-x-2">
+            <a href="{{ url_for('upload_training_data') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"> Upload Dataset </a>
+            <a href="{{ url_for('lihat_absensi') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"> Kembali </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for category, message in messages %} {% if category == 'error' %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{{ message }}</div>
+        {% else %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ message }}</div>
+        {% endif %} {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Active Model Info -->
+      {% if active_model %}
+      <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold text-green-800 mb-3">✅ Model Aktif</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <p class="text-sm text-green-600">Nama Model:</p>
+            <p class="font-semibold text-green-800">{{ active_model.model_name }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-green-600">Jumlah Kelas:</p>
+            <p class="font-semibold text-green-800">{{ active_model.total_classes }} kelas</p>
+          </div>
+          <div>
+            <p class="text-sm text-green-600">Tanggal Training:</p>
+            <p class="font-semibold text-green-800">{{ active_model.training_date.strftime('%d/%m/%Y %H:%M') if active_model.training_date else '-' }}</p>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold text-yellow-800 mb-2">⚠️ Tidak Ada Model Aktif</h2>
+        <p class="text-yellow-700">Sistem menggunakan model default. Buat dan aktifkan model baru untuk hasil yang lebih baik.</p>
+      </div>
+      {% endif %}
+
+      <!-- Create New Model Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">🚀 Buat Model Baru</h2>
+
+        <form id="createModelForm" class="space-y-4">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Model</label>
+              <input type="text" name="model_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Model Face Recognition v2.0" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Path Model (Opsional)</label>
+              <input type="text" name="model_path" value="best.pt" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="best.pt" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+            <textarea name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Deskripsi model dan tujuan penggunaan..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Dataset untuk Training</label>
+            <div class="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-4 space-y-2">
+              {% for dataset in datasets %}
+              <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                <input type="checkbox" name="dataset_ids" value="{{ dataset.id }}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                <div class="flex-1">
+                  <div class="font-medium text-gray-800">
+                    {{ dataset.dataset_name }} {% if dataset.guru_nama %}
+                    <span class="text-blue-600">({{ dataset.guru_nama }})</span>
+                    {% endif %}
+                  </div>
+                  <div class="text-sm text-gray-600">{{ dataset.images_count }} gambar, {{ dataset.labels_count }} label - {{ dataset.upload_date.strftime('%d/%m/%Y') if dataset.upload_date else '-' }}</div>
+                </div>
+                {% if dataset.is_used_for_training %}
+                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Sudah Digunakan</span>
+                {% endif %}
+              </label>
+              {% endfor %} {% if not datasets %}
+              <p class="text-gray-500 text-center py-4">Belum ada dataset. Upload dataset terlebih dahulu.</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg">🚀 Buat Model Mapping</button>
+        </form>
+      </div>
+
+      <!-- Existing Models -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Daftar Model</h2>
+
+        {% if models %}
+        <div class="space-y-4">
+          {% for model in models %}
+          <div class="model-card p-4 rounded-lg {% if model.is_active %}active-model{% else %}inactive-model{% endif %}">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-2">
+                  <h3 class="text-lg font-semibold text-gray-800">{{ model.model_name }}</h3>
+                  {% if model.is_active %}
+                  <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">Aktif</span>
+                  {% endif %}
+                </div>
+
+                <div class="grid md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p class="text-gray-600">Jumlah Kelas:</p>
+                    <p class="font-medium">{{ model.class_count or 0 }} kelas</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600">Path Model:</p>
+                    <p class="font-medium">{{ model.model_path }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600">Tanggal Training:</p>
+                    <p class="font-medium">{{ model.training_date.strftime('%d/%m/%Y') if model.training_date else '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600">Akurasi:</p>
+                    <p class="font-medium">{{ "%.2f%"|format(model.accuracy * 100) if model.accuracy else 'Belum diukur' }}</p>
+                  </div>
+                </div>
+
+                {% if model.description %}
+                <p class="text-gray-600 mt-2">{{ model.description }}</p>
+                {% endif %} {% if model.mapped_teachers %}
+                <div class="mt-2">
+                  <p class="text-sm text-gray-600">Guru yang Dikenali:</p>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    {% for teacher in model.mapped_teachers.split(',') %}
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ teacher }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="flex space-x-2 ml-4">
+                {% if not model.is_active %}
+                <button onclick="activateModel({{ model.id }})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">Aktifkan</button>
+                {% endif %}
+                <button onclick="viewMapping({{ model.id }})" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">Lihat Mapping</button>
+                <button onclick="deleteModel({{ model.id }})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Hapus</button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+          <p class="text-gray-500 mb-4">Belum ada model yang dibuat</p>
+          <p class="text-sm text-gray-400">Buat model pertama menggunakan form di atas</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Info Panel -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
+        <h3 class="font-semibold text-blue-800 mb-3">💡 Cara Kerja Model Recognition</h3>
+        <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+          <div>
+            <h4 class="font-medium mb-2">Langkah-langkah:</h4>
+            <ol class="list-decimal list-inside space-y-1">
+              <li>Upload dataset untuk setiap guru</li>
+              <li>Buat model mapping dengan memilih dataset</li>
+              <li>Sistem akan mengenali guru berdasarkan mapping</li>
+              <li>Aktifkan model untuk mulai menggunakan</li>
+            </ol>
+          </div>
+          <div>
+            <h4 class="font-medium mb-2">Tips Penting:</h4>
+            <ul class="list-disc list-inside space-y-1">
+              <li>Setiap guru perlu minimal 20 foto yang berbeda</li>
+              <li>Gunakan foto dengan pencahayaan yang bervariasi</li>
+              <li>Model yang aktif akan digunakan untuk deteksi</li>
+              <li>Backup model lama sebelum mengganti</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Class Mapping Modal -->
+    <div id="mappingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-4xl mx-4 max-h-96 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Class Mapping</h3>
+          <button onclick="closeMappingModal()" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="mappingContent">
+          <!-- Content will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Create Model Form Handler
+      document.getElementById("createModelForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('{{ url_for("create_model_mapping") }}', {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert("Error: " + data.error);
+            }
+          })
+          .catch((error) => {
+            alert("Error: " + error);
+          });
+      });
+
+      // Activate Model
+      function activateModel(modelId) {
+        if (confirm("Aktifkan model ini? Model yang aktif saat ini akan dinonaktifkan.")) {
+          const formData = new FormData();
+          formData.append("model_id", modelId);
+
+          fetch('{{ url_for("activate_model") }}', {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert(data.message);
+                location.reload();
+              } else {
+                alert("Error: " + data.error);
+              }
+            })
+            .catch((error) => {
+              alert("Error: " + error);
+            });
+        }
+      }
+
+      // View Class Mapping
+      function viewMapping(modelId) {
+        fetch(`/get_class_mapping/${modelId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              let content = '<table class="w-full text-sm"><tr><th class="border p-2">Class ID</th><th class="border p-2">Guru</th><th class="border p-2">Kelas</th><th class="border p-2">Threshold</th></tr>';
+              data.mappings.forEach((mapping) => {
+                content += `<tr>
+                            <td class="border p-2">${mapping.class_id}</td>
+                            <td class="border p-2">${mapping.guru_nama}</td>
+                            <td class="border p-2">${mapping.kelas || "-"}</td>
+                            <td class="border p-2">${mapping.confidence_threshold}</td>
+                        </tr>`;
+              });
+              content += "</table>";
+
+              document.getElementById("mappingContent").innerHTML = content;
+              document.getElementById("mappingModal").classList.remove("hidden");
+            } else {
+              alert("Error: " + data.error);
+            }
+          });
+      }
+
+      function closeMappingModal() {
+        document.getElementById("mappingModal").classList.add("hidden");
+      }
+
+      function deleteModel(modelId) {
+        if (confirm("Hapus model ini? Tindakan ini tidak dapat dibatalkan.")) {
+          // TODO: Implement delete model
+          alert("Fitur hapus model akan segera tersedia");
+        }
+      }
+
+      // Close modal when clicking outside
+      document.getElementById("mappingModal").addEventListener("click", function (e) {
+        if (e.target === this) {
+          closeMappingModal();
+        }
+      });
+    </script>
+  </body>
+</html>

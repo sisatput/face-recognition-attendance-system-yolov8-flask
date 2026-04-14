@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Login Admin</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/web.png') }}" type="image/png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-50 font-[Poppins]">
+    <div class="min-h-screen flex items-center justify-center p-4 animate-fade-in">
+      <div class="auth-container w-full max-w-md p-8 rounded-3xl shadow-xl border border-primary-100 bg-white relative overflow-hidden">
+        <!-- Decorative elements -->
+        <div class="absolute top-0 right-0 w-40 h-40 bg-primary-100 rounded-full -mr-20 -mt-20 opacity-30"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-primary-100 rounded-full -ml-16 -mb-16 opacity-30"></div>
+
+        <div class="text-center mb-8 animate-slide-down relative z-10">
+          <div class="mb-6 flex justify-center">
+            <div class="bg-white rounded-xl shadow-md p-2">
+              <img src="{{ url_for('static', filename='images/logo_sekolah.png') }}" alt="Logo SD Negeri 1 Purbalingga Lor" class="h-16 w-auto" />
+            </div>
+          </div>
+          <h1 class="text-3xl font-bold gradient-heading mb-2">Admin Portal</h1>
+          <p class="text-gray-600">Silahkan masukkan password untuk akses admin</p>
+        </div>
+
+        <form action="{{ url_for('set_schedule') }}" method="POST" class="space-y-6 animate-slide-down relative z-10" style="animation-delay: 0.2s">
+          {% if error %}
+          <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+            <div class="flex">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{{ error }}</span>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <input
+              id="passwordInput"
+              name="password"
+              type="password"
+              required
+              class="input-transition block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="Password"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <button type="button" id="togglePassword" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="relative w-full py-3 px-4 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            Login
+          </button>
+        </form>
+
+        <div class="mt-6 text-center animate-slide-down" style="animation-delay: 0.3s">
+          <a href="{{ url_for('index') }}" class="text-primary-600 hover:text-primary-700 font-medium inline-flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali ke Halaman Utama
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script References -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/templates/admin_login.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+  </body>
+</html>
