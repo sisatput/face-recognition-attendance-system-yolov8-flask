@@ -94,7 +94,7 @@ Buka browser ke http://localhost:5000
 
 ## Default Admin Credentials
 
-- **Username**: (tidak ada)
+- **Username**: admin
 - **Password**: `admin`
 
 ⚠️ **PENTING**: Ubah password default segera di halaman Change Password!
