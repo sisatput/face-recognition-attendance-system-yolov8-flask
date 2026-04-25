@@ -200,7 +200,7 @@ MIT License - see LICENSE file for details
 
 **Satrio Put**
 - GitHub: [@sisatput](https://github.com/sisatput)
-- Email: satrio@example.com
+- Email: satriayuda89@gmail.com
 
 ## Disclaimer
 
